@@ -281,14 +281,18 @@ class typyDB(object):
             self.data[ldata].index.name = 'vector_id'
         else:
             istart = self.data[ldata].shape[0]
-            self.data[ldata] = pd.concat([self.data[ldata],data],ignore_index=True)
+            self.data[ldata] = pd.concat([self.data[ldata],data],ignore_index=True,sort=True)
             self.data[ldata].index.name = 'vector_id'
         
         data_index = pd.DataFrame(data_keys,columns=self.data_labels)
         data_index['trial_id'] = trial_id
         data_index['vector_id'] = np.arange(istart,istart+ndata,dtype=int)
         data_index['length'] = ldata
-        self.data_index = pd.concat([self.data_index,data_index],ignore_index=True)
+        self.data_index = pd.concat([self.data_index,data_index],ignore_index=True,sort=True)
+
+        # need to make sure the trial_id column is mergable with the trial_index index
+        self.data_index.trial_id = self.data_index.trial_id.astype(int)
+
         
     def build_mask(self,sel,index):
         '''
