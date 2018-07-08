@@ -371,4 +371,61 @@ class typyDB(object):
             return index[0],data[0]
         else:
             return index,data
+
+    def select_x(self,indexx,datax,trial_select=None,data_select_y=None,trial_id_y=None):
+        if indexx.shape[0] != 1:
+            raise ValueError('select_x() only works get a single dataset (1 row) is passed to it')
+        dx = datax.iloc[0]
+        idx = datax.index[0]
+        ix = indexx.index[0]
+
+        indexy,datay = self.select(trial_select,data_select_y,trial_id_y)
+
+        indexxy = []
+        dataxy = []
+        for (iy,y),(idy,dy) in zip(indexy.iterrows(),datay.iterrows()):
+            dy.index = datax.iloc[0]
+            dataxy.append(dy)
+
+            del y['vector_id']
+            y['vector_id_x'] = idx
+            y['vector_id_y'] = idy
+            y['data_id_x'] = ix
+            y['data_id_y'] = iy
+
+            indexxy.append(y)
+
+        index = pd.DataFrame(indexxy)
+        data = pd.DataFrame(dataxy)
+        return index,data
+
+    def select_xy(self,trial_select=None,data_select_x=None,data_select_y=None,trial_id_x=None,trial_id_y=None):
+        indexx,datax = self.select(trial_select,data_select_x,trial_id_x)
+        indexy,datay = self.select(trial_select,data_select_y,trial_id_y)
+
+        if indexx.shape != indexy.shape:
+            raise ValueError('X and Y data are not the same shape. Aborting merge.')
+
+        indexxy = []
+        dataxy = []
+        for (ix,x),(iy,y),(idx,dx),(idy,dy) in zip(indexx.iterrows(),indexy.iterrows(),datax.iterrows(),datay.iterrows()):
+            dy.index = dx
+            dataxy.append(dy)
+
+            del y['vector_id']
+            y['vector_id_x'] = idx
+            y['vector_id_y'] = idy
+            y['data_id_x'] = ix
+            y['data_id_y'] = iy
+
+            indexxy.append(y)
+
+        index = pd.DataFrame(indexxy)
+        data = pd.DataFrame(dataxy)
+        return index,data
+
+
+
+
+
             
